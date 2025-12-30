@@ -217,6 +217,16 @@ class OuraClient:
             all_data["stress"] = []
 
         try:
+            # Convert dates to datetime format for heartrate endpoint
+            start_datetime = f"{start_date}T00:00:00"
+            end_datetime = f"{end_date}T23:59:59"
+            all_data["heartrate"] = self.get_heartrate(start_datetime, end_datetime).get(
+                "data", []
+            )
+        except Exception:
+            all_data["heartrate"] = []
+
+        try:
             all_data["workouts"] = self.get_workouts(start_date, end_date).get("data", [])
         except Exception:
             all_data["workouts"] = []
