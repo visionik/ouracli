@@ -43,12 +43,14 @@ def format_html(data: Any, title: str | None = None) -> str:
                         chart_counter[0] += 1
                         chart_id = f"chart{chart_counter[0]}"
                         chart_configs.append(create_chartjs_config(value["items"], chart_id))
+                        interval = value.get("interval", "N/A")
+                        interval_p = f'<p><strong>Interval:</strong> {interval} seconds</p>'
+                        chart_div = (
+                            f'<div style="height: 400px; margin: 20px 0;">'
+                            f'<canvas id="{chart_id}"></canvas></div>'
+                        )
                         complex_items.append(
-                            (
-                                f"<h{level}>{human_key}</h{level}>",
-                                f'<p><strong>Interval:</strong> {value.get("interval", "N/A")} seconds</p>'
-                                + f'<div style="height: 400px; margin: 20px 0;"><canvas id="{chart_id}"></canvas></div>',
-                            )
+                            (f"<h{level}>{human_key}</h{level}>", interval_p + chart_div)
                         )
                     elif not any(isinstance(v, (dict, list)) for v in value.values()):
                         # Flat dict - render as table
@@ -85,12 +87,11 @@ def format_html(data: Any, title: str | None = None) -> str:
                         chart_config = create_chartjs_heartrate_config(value, chart_id)
                         if chart_config:
                             chart_configs.append(chart_config)
-                            complex_items.append(
-                                (
-                                    f"<h{level}>{human_key}</h{level}>",
-                                    f'<div style="height: 400px; margin: 20px 0;"><canvas id="{chart_id}"></canvas></div>',
-                                )
+                            chart_div = (
+                                f'<div style="height: 400px; margin: 20px 0;">'
+                                f'<canvas id="{chart_id}"></canvas></div>'
                             )
+                            complex_items.append((f"<h{level}>{human_key}</h{level}>", chart_div))
                     elif value and isinstance(value[0], dict):
                         items_html = "".join([format_html_item(item, level + 1) for item in value])
                         complex_items.append((f"<h{level}>{human_key}</h{level}>", items_html))
@@ -119,7 +120,9 @@ def format_html(data: Any, title: str | None = None) -> str:
     html_parts.append('<html lang="en">')
     html_parts.append("<head>")
     html_parts.append('<meta charset="UTF-8">')
-    html_parts.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
+    html_parts.append(
+        '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+    )
     html_parts.append(f'<title>{title or "Oura Data"}</title>')
     html_parts.append(
         '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>'
@@ -128,15 +131,25 @@ def format_html(data: Any, title: str | None = None) -> str:
     html_parts.append(
         """
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                "Helvetica Neue", Arial, sans-serif;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
             color: #333;
         }
-        h1 { color: #2E7D32; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
-        h2 { color: #388E3C; border-bottom: 2px solid #81C784; padding-bottom: 8px; margin-top: 30px; }
+        h1 {
+            color: #2E7D32;
+            border-bottom: 3px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+        h2 {
+            color: #388E3C;
+            border-bottom: 2px solid #81C784;
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
         h3 { color: #43A047; margin-top: 20px; }
         table {
             width: 100%;
@@ -217,9 +230,11 @@ def format_html(data: Any, title: str | None = None) -> str:
                 chart_config = create_chartjs_heartrate_config(day_data, chart_id)
                 if chart_config:
                     chart_configs.append(chart_config)
-                    html_parts.append(
-                        f'<div style="height: 400px; margin: 20px 0;"><canvas id="{chart_id}"></canvas></div>'
+                    chart_div = (
+                        f'<div style="height: 400px; margin: 20px 0;">'
+                        f'<canvas id="{chart_id}"></canvas></div>'
                     )
+                    html_parts.append(chart_div)
         else:
             if title:
                 html_parts.append(f"<h1>{title}</h1>")

@@ -1,6 +1,7 @@
 """CLI application for OuraCLI."""
 
 from enum import Enum
+from typing import Any
 
 import typer
 
@@ -51,7 +52,11 @@ class OutputFormat(str, Enum):
 
 
 def get_output_format(
-    json_flag: bool, tree_flag: bool, markdown_flag: bool, dataframe_flag: bool, html_flag: bool
+    json_flag: bool,
+    tree_flag: bool,
+    markdown_flag: bool,
+    dataframe_flag: bool,
+    html_flag: bool,
 ) -> str:
     """Determine output format from flags. Tree is default."""
     format_flags = [
@@ -72,6 +77,50 @@ def get_output_format(
     return active_flags[0] if active_flags else "tree"
 
 
+def create_format_options() -> tuple[
+    typer.models.OptionInfo,
+    typer.models.OptionInfo,
+    typer.models.OptionInfo,
+    typer.models.OptionInfo,
+    typer.models.OptionInfo,
+]:
+    """Create standard format option flags for commands."""
+    return (
+        typer.Option(False, "--json", help="Output as JSON"),
+        typer.Option(False, "--tree", help="Output as tree (default)"),
+        typer.Option(False, "--markdown", help="Output as markdown"),
+        typer.Option(False, "--dataframe", help="Output as dataframe"),
+        typer.Option(False, "--html", help="Output as HTML"),
+    )
+
+
+def execute_data_command(
+    date_range: str,
+    fetch_func: Any,
+    output_format: str,
+    wrap_key: str | None = None,
+) -> None:
+    """Execute a standard data fetching command.
+
+    Args:
+        date_range: Date range string to parse
+        fetch_func: Client method to fetch data (receives start_date, end_date)
+        output_format: Format for output
+        wrap_key: Optional key to wrap list results for markdown/html
+    """
+    client = OuraClient()
+    start_date, end_date = parse_date_range(date_range)
+    data = fetch_func(client, start_date, end_date)
+    result = data.get("data", [])
+
+    # Wrap in dict with category key for proper heading in markdown/html
+    if wrap_key and output_format in ("markdown", "html") and isinstance(result, list):
+        result = {wrap_key: result}
+
+    output = format_output(result, output_format)
+    typer.echo(output)
+
+
 @app.command()
 def activity(
     date_range: str = typer.Argument("today", help="Date range (e.g., 'today', '7 days')"),
@@ -85,15 +134,12 @@ def activity(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_daily_activity(start_date, end_date)
-    result = data.get("data", [])
-    # For markdown/html, wrap in dict with category for proper heading
-    if output_format in ("markdown", "html") and isinstance(result, list):
-        result = {"activity": result}
-    output = format_output(result, output_format)
-    typer.echo(output)
+    execute_data_command(
+        date_range,
+        lambda c, s, e: c.get_daily_activity(s, e),
+        output_format,
+        "activity",
+    )
 
 
 @app.command()
@@ -109,11 +155,7 @@ def sleep(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_daily_sleep(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_daily_sleep(s, e), output_format)
 
 
 @app.command()
@@ -129,11 +171,7 @@ def readiness(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_daily_readiness(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_daily_readiness(s, e), output_format)
 
 
 @app.command()
@@ -149,11 +187,7 @@ def spo2(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_daily_spo2(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_daily_spo2(s, e), output_format)
 
 
 @app.command()
@@ -169,11 +203,7 @@ def stress(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_daily_stress(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_daily_stress(s, e), output_format)
 
 
 @app.command()
@@ -189,14 +219,12 @@ def heartrate(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    # Convert dates to datetime format for heartrate endpoint
-    start_datetime = f"{start_date}T00:00:00"
-    end_datetime = f"{end_date}T23:59:59"
-    data = client.get_heartrate(start_datetime, end_datetime)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    # Heartrate endpoint uses datetime format, not just dates
+    execute_data_command(
+        date_range,
+        lambda c, s, e: c.get_heartrate(f"{s}T00:00:00", f"{e}T23:59:59"),
+        output_format,
+    )
 
 
 @app.command()
@@ -212,11 +240,7 @@ def workout(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_workouts(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_workouts(s, e), output_format)
 
 
 @app.command()
@@ -232,11 +256,7 @@ def session(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_sessions(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_sessions(s, e), output_format)
 
 
 @app.command()
@@ -252,11 +272,7 @@ def tag(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_tags(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_tags(s, e), output_format)
 
 
 @app.command()
@@ -272,11 +288,7 @@ def rest_mode(
     output_format = get_output_format(
         json_flag, tree_flag, markdown_flag, dataframe_flag, html_flag
     )
-    client = OuraClient()
-    start_date, end_date = parse_date_range(date_range)
-    data = client.get_rest_mode_periods(start_date, end_date)
-    output = format_output(data.get("data", []), output_format)
-    typer.echo(output)
+    execute_data_command(date_range, lambda c, s, e: c.get_rest_mode_periods(s, e), output_format)
 
 
 @app.command()
@@ -320,8 +332,6 @@ def get_all(
     data = client.get_all_data(start_date, end_date)
     output = format_output(data, output_format, by_day=by_day_flag)
     typer.echo(output)
-
-
 
 
 def main() -> None:

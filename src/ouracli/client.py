@@ -83,50 +83,64 @@ class OuraClient:
         result: dict[str, Any] = response.json()
         return result
 
+    def _get_date_range_data(
+        self, endpoint: str, start_date: str, end_date: str, next_token: str | None = None
+    ) -> dict[str, Any]:
+        """Generic method for date-range endpoints.
+
+        Args:
+            endpoint: API endpoint path (e.g., 'usercollection/daily_activity')
+            start_date: Start date (YYYY-MM-DD)
+            end_date: End date (YYYY-MM-DD)
+            next_token: Optional pagination token
+
+        Returns:
+            JSON response as dictionary
+        """
+        params = {"start_date": start_date, "end_date": end_date}
+        if next_token:
+            params["next_token"] = next_token
+        return self._get(endpoint, params)
+
     def get_daily_activity(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get daily activity data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/daily_activity", params)
+        return self._get_date_range_data(
+            "usercollection/daily_activity", start_date, end_date, next_token
+        )
 
     def get_daily_sleep(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get daily sleep data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/daily_sleep", params)
+        return self._get_date_range_data(
+            "usercollection/daily_sleep", start_date, end_date, next_token
+        )
 
     def get_daily_readiness(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get daily readiness data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/daily_readiness", params)
+        return self._get_date_range_data(
+            "usercollection/daily_readiness", start_date, end_date, next_token
+        )
 
     def get_daily_spo2(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get daily SpO2 data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/daily_spo2", params)
+        return self._get_date_range_data(
+            "usercollection/daily_spo2", start_date, end_date, next_token
+        )
 
     def get_daily_stress(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get daily stress data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/daily_stress", params)
+        return self._get_date_range_data(
+            "usercollection/daily_stress", start_date, end_date, next_token
+        )
 
     def get_heartrate(
         self, start_datetime: str, end_datetime: str, next_token: str | None = None
@@ -141,37 +155,27 @@ class OuraClient:
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get workout data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/workout", params)
+        return self._get_date_range_data("usercollection/workout", start_date, end_date, next_token)
 
     def get_sessions(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get session data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/session", params)
+        return self._get_date_range_data("usercollection/session", start_date, end_date, next_token)
 
     def get_tags(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get tag data."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/tag", params)
+        return self._get_date_range_data("usercollection/tag", start_date, end_date, next_token)
 
     def get_rest_mode_periods(
         self, start_date: str, end_date: str, next_token: str | None = None
     ) -> dict[str, Any]:
         """Get rest mode periods."""
-        params = {"start_date": start_date, "end_date": end_date}
-        if next_token:
-            params["next_token"] = next_token
-        return self._get("usercollection/rest_mode_period", params)
+        return self._get_date_range_data(
+            "usercollection/rest_mode_period", start_date, end_date, next_token
+        )
 
     def get_personal_info(self) -> dict[str, Any]:
         """Get personal information."""

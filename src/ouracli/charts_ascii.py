@@ -1,5 +1,7 @@
 """ASCII/Braille chart generation for terminal output."""
 
+from ouracli.chart_utils import bucket_regular_data, bucket_timeseries_data
+
 
 def create_heartrate_bar_chart_ascii(
     heartrate_data: list[dict], width: int = 72, height: int = 10
@@ -18,9 +20,6 @@ def create_heartrate_bar_chart_ascii(
     if not heartrate_data:
         return "No heart rate data"
 
-    # Convert irregular timestamp data to 10-minute buckets (144 total = 24 hours * 6)
-    from datetime import datetime
-
     # Get actual min/max from raw data for Y-axis labels
     all_bpms: list[float] = [
         float(reading.get("bpm"))  # type: ignore[arg-type]
@@ -31,32 +30,12 @@ def create_heartrate_bar_chart_ascii(
     actual_max: float = max(all_bpms) if all_bpms else 100.0
 
     # Create 144 buckets (24 hours * 6 = one bucket per 10 minutes)
-    ten_minute_buckets: list[list[float]] = [[] for _ in range(144)]
+    bucket_averages = bucket_timeseries_data(
+        heartrate_data, "timestamp", "bpm", bucket_minutes=10, buckets_per_day=144
+    )
 
-    for reading in heartrate_data:
-        timestamp_str = reading.get("timestamp", "")
-        bpm = reading.get("bpm")
-
-        if timestamp_str and bpm is not None:
-            try:
-                # Parse timestamp and calculate which 10-minute bucket it belongs to
-                dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
-                # Calculate total minutes since midnight
-                total_minutes = dt.hour * 60 + dt.minute
-                # Determine which 10-minute bucket (0-143)
-                bucket_idx = total_minutes // 10
-                if 0 <= bucket_idx < 144:
-                    ten_minute_buckets[bucket_idx].append(bpm)
-            except (ValueError, AttributeError):
-                continue
-
-    # Calculate average BPM for each 10-minute bucket
-    buckets = []
-    for bucket in ten_minute_buckets:
-        if bucket:
-            buckets.append(sum(bucket) / len(bucket))
-        else:
-            buckets.append(0)
+    # Replace None with 0 for ASCII chart
+    buckets = [v if v is not None else 0 for v in bucket_averages]
 
     return _create_ascii_bar_chart_from_buckets(
         buckets, width, height, "BPM", actual_min, actual_max
@@ -81,19 +60,7 @@ def create_ascii_bar_chart(met_items: list[float], width: int = 72, height: int 
     # Group items into buckets - use 2x width since we'll pack 2 bars per character
     # 1440 items -> 144 buckets = 10 items per bucket (10 minutes each)
     num_buckets = width * 2
-    bucket_size = len(met_items) // num_buckets
-    if bucket_size == 0:
-        bucket_size = 1
-
-    buckets = []
-    for i in range(0, len(met_items), bucket_size):
-        bucket = met_items[i : i + bucket_size]
-        if bucket:
-            # Use max value in bucket for visualization
-            buckets.append(max(bucket))
-
-    # Ensure we have exactly 'num_buckets' buckets
-    buckets = buckets[:num_buckets]
+    buckets = bucket_regular_data(met_items, target_buckets=num_buckets, aggregation="max")
 
     return _create_ascii_bar_chart_from_buckets(buckets, width, height, "MET")
 
@@ -162,21 +129,21 @@ def _create_ascii_bar_chart_from_buckets(
     # Each character has 4 dots of resolution, so total resolution is height * 4
     total_dots = height * 4
 
-    # Calculate Y-axis labels (show at top, 3 midpoints, and bottom)
-    # We'll show labels for rows 0, 2, 5, 7, 9 (for height=10)
+    # Calculate Y-axis labels (show 5 evenly distributed labels)
     y_labels = {}
-    label_rows = [0, 2, 5, 7, 9] if height >= 10 else [0, height // 2, height - 1]
+    num_labels = min(5, height)  # Show up to 5 labels
 
-    for row in label_rows:
-        # Calculate value at this row (from top)
-        # Row 0 = max, Row height-1 = min
-        if row == 0:
-            value_at_row = max_val
-        elif row == height - 1:
-            value_at_row = min_val
+    for i in range(num_labels):
+        # Distribute labels evenly from top (max) to bottom (min)
+        row = int(i * (height - 1) / (num_labels - 1))
+        # Calculate value at this row linearly from max to min
+        fraction = i / (num_labels - 1)
+        value_at_row = max_val - fraction * (max_val - min_val)
+        # Round to appropriate precision based on value range
+        if max_val - min_val > 20:
+            y_labels[row] = f"{value_at_row:.0f}"  # Integer for large ranges
         else:
-            value_at_row = max_val - (row / (height - 1)) * (max_val - min_val)
-        y_labels[row] = f"{value_at_row:.0f}"
+            y_labels[row] = f"{value_at_row:.1f}"  # One decimal for small ranges
 
     # Find max label width for alignment
     max_label_width = max(len(label) for label in y_labels.values()) if y_labels else 0

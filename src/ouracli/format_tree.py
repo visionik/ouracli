@@ -3,7 +3,12 @@
 from typing import Any
 
 from ouracli.charts_ascii import create_ascii_bar_chart, create_heartrate_bar_chart_ascii
-from ouracli.format_utils import EXCLUDE_FIELDS, calculate_max_position, humanize_key, sort_dict_keys
+from ouracli.format_utils import (
+    EXCLUDE_FIELDS,
+    calculate_max_position,
+    humanize_key,
+    sort_dict_keys,
+)
 
 
 def format_tree(
