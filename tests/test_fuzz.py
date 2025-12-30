@@ -1,16 +1,16 @@
 """Fuzzing tests for CLI inputs and API responses."""
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import pytest
-from hypothesis import given, settings, strategies as st
-from hypothesis import assume
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
-from ouracli.date_parser import parse_date_range
-from ouracli.formatters import format_output
 from ouracli.charts_html import create_chartjs_config, create_chartjs_heartrate_config
 from ouracli.charts_mermaid import create_mermaid_bar_chart, create_mermaid_heartrate_chart
+from ouracli.date_parser import parse_date_range
+from ouracli.formatters import format_output
 
 
 class TestDateParserFuzzing:
@@ -57,7 +57,7 @@ class TestDateParserFuzzing:
 
     @given(
         st.integers(min_value=1, max_value=365),
-        st.sampled_from(["day", "days", "week", "weeks", "month", "months"])
+        st.sampled_from(["day", "days", "week", "weeks", "month", "months"]),
     )
     @settings(max_examples=50)
     def test_date_parser_with_relative_dates(self, num: int, unit: str) -> None:
@@ -88,9 +88,9 @@ class TestFormattersFuzzing:
                 st.floats(allow_nan=False, allow_infinity=False),
                 st.text(max_size=100),
             ),
-            max_size=20
+            max_size=20,
         ),
-        st.sampled_from(["json", "tree", "markdown", "html"])
+        st.sampled_from(["json", "tree", "markdown", "html"]),
     )
     @settings(max_examples=100)
     def test_format_output_handles_arbitrary_dicts(self, data: dict, format_type: str) -> None:
@@ -109,12 +109,14 @@ class TestFormattersFuzzing:
         st.lists(
             st.dictionaries(
                 keys=st.text(min_size=1, max_size=20),
-                values=st.one_of(st.none(), st.integers(), st.floats(allow_nan=False), st.text(max_size=50)),
-                max_size=10
+                values=st.one_of(
+                    st.none(), st.integers(), st.floats(allow_nan=False), st.text(max_size=50)
+                ),
+                max_size=10,
             ),
-            max_size=10
+            max_size=10,
         ),
-        st.sampled_from(["json", "tree", "markdown"])
+        st.sampled_from(["json", "tree", "markdown"]),
     )
     @settings(max_examples=50)
     def test_format_output_handles_list_of_dicts(self, data: list, format_type: str) -> None:
@@ -129,7 +131,12 @@ class TestFormattersFuzzing:
 class TestChartsHtmlFuzzing:
     """Fuzzing tests for HTML chart generation."""
 
-    @given(st.lists(st.floats(min_value=0, max_value=10, allow_nan=False, allow_infinity=False), max_size=2000))
+    @given(
+        st.lists(
+            st.floats(min_value=0, max_value=10, allow_nan=False, allow_infinity=False),
+            max_size=2000,
+        )
+    )
     @settings(max_examples=50)
     def test_chartjs_config_handles_arbitrary_met_data(self, met_items: list) -> None:
         """Test Chart.js config generation with arbitrary MET data."""
@@ -145,21 +152,25 @@ class TestChartsHtmlFuzzing:
 
     @given(
         st.lists(
-            st.fixed_dictionaries({
-                "timestamp": st.one_of(
-                    st.datetimes(min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)).map(
-                        lambda dt: dt.isoformat() + "Z"
+            st.fixed_dictionaries(
+                {
+                    "timestamp": st.one_of(
+                        st.datetimes(
+                            min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)
+                        ).map(lambda dt: dt.isoformat() + "Z"),
+                        st.text(alphabet="0123456789-T:Z", max_size=30),
+                        st.just(""),
                     ),
-                    st.text(alphabet="0123456789-T:Z", max_size=30),
-                    st.just(""),
-                ),
-                "bpm": st.one_of(
-                    st.none(),
-                    st.integers(min_value=30, max_value=220),
-                    st.floats(min_value=30, max_value=220, allow_nan=False, allow_infinity=False)
-                )
-            }),
-            max_size=500
+                    "bpm": st.one_of(
+                        st.none(),
+                        st.integers(min_value=30, max_value=220),
+                        st.floats(
+                            min_value=30, max_value=220, allow_nan=False, allow_infinity=False
+                        ),
+                    ),
+                }
+            ),
+            max_size=500,
         )
     )
     @settings(max_examples=50)
@@ -172,7 +183,12 @@ class TestChartsHtmlFuzzing:
         except Exception as e:
             pytest.fail(f"Unexpected exception: {e}")
 
-    @given(st.lists(st.floats(min_value=-100, max_value=100, allow_nan=False, allow_infinity=False), max_size=1440))
+    @given(
+        st.lists(
+            st.floats(min_value=-100, max_value=100, allow_nan=False, allow_infinity=False),
+            max_size=1440,
+        )
+    )
     @settings(max_examples=30)
     def test_chartjs_config_handles_extreme_values(self, met_items: list) -> None:
         """Test Chart.js config with extreme values."""
@@ -184,7 +200,12 @@ class TestChartsHtmlFuzzing:
 class TestChartsMermaidFuzzing:
     """Fuzzing tests for Mermaid chart generation."""
 
-    @given(st.lists(st.floats(min_value=0, max_value=10, allow_nan=False, allow_infinity=False), max_size=2000))
+    @given(
+        st.lists(
+            st.floats(min_value=0, max_value=10, allow_nan=False, allow_infinity=False),
+            max_size=2000,
+        )
+    )
     @settings(max_examples=50)
     def test_mermaid_bar_chart_handles_arbitrary_data(self, met_items: list) -> None:
         """Test Mermaid bar chart with arbitrary MET data."""
@@ -199,17 +220,21 @@ class TestChartsMermaidFuzzing:
 
     @given(
         st.lists(
-            st.fixed_dictionaries({
-                "timestamp": st.datetimes(min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)).map(
-                    lambda dt: dt.isoformat() + "Z"
-                ),
-                "bpm": st.one_of(
-                    st.none(),
-                    st.integers(min_value=30, max_value=220),
-                    st.floats(min_value=30, max_value=220, allow_nan=False, allow_infinity=False)
-                )
-            }),
-            max_size=500
+            st.fixed_dictionaries(
+                {
+                    "timestamp": st.datetimes(
+                        min_value=datetime(2020, 1, 1), max_value=datetime(2025, 12, 31)
+                    ).map(lambda dt: dt.isoformat() + "Z"),
+                    "bpm": st.one_of(
+                        st.none(),
+                        st.integers(min_value=30, max_value=220),
+                        st.floats(
+                            min_value=30, max_value=220, allow_nan=False, allow_infinity=False
+                        ),
+                    ),
+                }
+            ),
+            max_size=500,
         )
     )
     @settings(max_examples=50)
@@ -227,23 +252,30 @@ class TestAPIResponseFuzzing:
 
     @given(
         st.dictionaries(
-            keys=st.text(min_size=1, max_size=50, alphabet=st.characters(blacklist_categories=("Cs",))),
+            keys=st.text(
+                min_size=1, max_size=50, alphabet=st.characters(blacklist_categories=("Cs",))
+            ),
             values=st.recursive(
                 st.one_of(
                     st.none(),
                     st.booleans(),
                     st.integers(min_value=-1e9, max_value=1e9),
                     st.floats(allow_nan=False, allow_infinity=False, min_value=-1e9, max_value=1e9),
-                    st.text(max_size=200, alphabet=st.characters(blacklist_categories=("Cs",)))
+                    st.text(max_size=200, alphabet=st.characters(blacklist_categories=("Cs",))),
                 ),
-                lambda children: st.lists(children, max_size=10) | st.dictionaries(
-                    st.text(min_size=1, max_size=20, alphabet=st.characters(blacklist_categories=("Cs",))),
+                lambda children: st.lists(children, max_size=10)
+                | st.dictionaries(
+                    st.text(
+                        min_size=1,
+                        max_size=20,
+                        alphabet=st.characters(blacklist_categories=("Cs",)),
+                    ),
                     children,
-                    max_size=10
+                    max_size=10,
                 ),
-                max_leaves=50
+                max_leaves=50,
             ),
-            max_size=20
+            max_size=20,
         )
     )
     @settings(max_examples=50, deadline=None)
@@ -255,24 +287,36 @@ class TestAPIResponseFuzzing:
             # Should be valid JSON
             parsed = json.loads(result)
             assert isinstance(parsed, dict)
-        except Exception as e:
+        except Exception:
             # Some structures might be too complex, that's OK
             pass
 
     @given(
         st.lists(
-            st.fixed_dictionaries({
-                "day": st.dates(min_value=datetime(2020, 1, 1).date(), max_value=datetime(2025, 12, 31).date()).map(str),
-                "score": st.one_of(st.none(), st.integers(min_value=0, max_value=100)),
-                "met": st.fixed_dictionaries({
-                    "interval": st.floats(min_value=1, max_value=300, allow_nan=False, allow_infinity=False),
-                    "items": st.lists(
-                        st.floats(min_value=0, max_value=10, allow_nan=False, allow_infinity=False),
-                        min_size=0, max_size=1440
-                    )
-                })
-            }),
-            max_size=10
+            st.fixed_dictionaries(
+                {
+                    "day": st.dates(
+                        min_value=datetime(2020, 1, 1).date(),
+                        max_value=datetime(2025, 12, 31).date(),
+                    ).map(str),
+                    "score": st.one_of(st.none(), st.integers(min_value=0, max_value=100)),
+                    "met": st.fixed_dictionaries(
+                        {
+                            "interval": st.floats(
+                                min_value=1, max_value=300, allow_nan=False, allow_infinity=False
+                            ),
+                            "items": st.lists(
+                                st.floats(
+                                    min_value=0, max_value=10, allow_nan=False, allow_infinity=False
+                                ),
+                                min_size=0,
+                                max_size=1440,
+                            ),
+                        }
+                    ),
+                }
+            ),
+            max_size=10,
         )
     )
     @settings(max_examples=30, deadline=None)
@@ -291,12 +335,17 @@ class TestAPIResponseFuzzing:
 
     @given(
         st.lists(
-            st.fixed_dictionaries({
-                "day": st.dates(min_value=datetime(2020, 1, 1).date(), max_value=datetime(2025, 12, 31).date()).map(str),
-                "bpm": st.integers(min_value=30, max_value=220),
-                "source": st.sampled_from(["sleep", "rest", "activity"]),
-            }),
-            max_size=50
+            st.fixed_dictionaries(
+                {
+                    "day": st.dates(
+                        min_value=datetime(2020, 1, 1).date(),
+                        max_value=datetime(2025, 12, 31).date(),
+                    ).map(str),
+                    "bpm": st.integers(min_value=30, max_value=220),
+                    "source": st.sampled_from(["sleep", "rest", "activity"]),
+                }
+            ),
+            max_size=50,
         )
     )
     @settings(max_examples=30)
@@ -322,7 +371,7 @@ class TestEdgeCases:
             try:
                 result = format_output(data, format_type)
                 assert isinstance(result, str)
-            except Exception as e:
+            except Exception:
                 # Some Unicode might cause issues, that's acceptable
                 pass
 
@@ -331,7 +380,7 @@ class TestEdgeCases:
     def test_chartjs_handles_special_float_values(self, values: list) -> None:
         """Test Chart.js config handles NaN and Infinity."""
         # Filter out NaN and Infinity as they're not valid for our use case
-        clean_values = [v for v in values if not (float('inf') == abs(v) or v != v)]
+        clean_values = [v for v in values if not (float("inf") == abs(v) or v != v)]
         try:
             result = create_chartjs_config(clean_values, "special")
             assert isinstance(result, str)
@@ -359,11 +408,13 @@ class TestEdgeCases:
 
     @given(
         st.lists(
-            st.fixed_dictionaries({
-                "timestamp": st.text(alphabet="XYZ", max_size=20),  # Invalid timestamps
-                "bpm": st.integers(min_value=30, max_value=220)
-            }),
-            max_size=100
+            st.fixed_dictionaries(
+                {
+                    "timestamp": st.text(alphabet="XYZ", max_size=20),  # Invalid timestamps
+                    "bpm": st.integers(min_value=30, max_value=220),
+                }
+            ),
+            max_size=100,
         )
     )
     @settings(max_examples=30)

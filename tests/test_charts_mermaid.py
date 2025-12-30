@@ -1,7 +1,5 @@
 """Tests for charts_mermaid module."""
 
-import pytest
-
 from ouracli.charts_mermaid import (
     create_mermaid_bar_chart,
     create_mermaid_heartrate_chart,
@@ -151,10 +149,7 @@ class TestCreateMermaidHeartrateChart:
         # Create data spanning 24 hours
         data = []
         for hour in range(24):
-            data.append({
-                "timestamp": f"2025-01-01T{hour:02d}:00:00Z",
-                "bpm": 70
-            })
+            data.append({"timestamp": f"2025-01-01T{hour:02d}:00:00Z", "bpm": 70})
         result = create_mermaid_heartrate_chart(data)
         assert '"00"' in result
         assert '"12"' in result
@@ -165,10 +160,12 @@ class TestCreateMermaidHeartrateChart:
         # Create multiple readings per hour
         data = []
         for minute in range(60):
-            data.append({
-                "timestamp": f"2025-01-01T12:{minute:02d}:00Z",
-                "bpm": 70 + minute  # Increasing BPM
-            })
+            data.append(
+                {
+                    "timestamp": f"2025-01-01T12:{minute:02d}:00Z",
+                    "bpm": 70 + minute,  # Increasing BPM
+                }
+            )
         result = create_mermaid_heartrate_chart(data)
         # Hour 12 should have average BPM around 99.5 (70 + 29.5)
         # The actual average is (70 + 129) / 2 = 99.5
@@ -204,10 +201,7 @@ class TestCreateMermaidHeartrateChart:
                 bpm = 80  # Active during day
             else:
                 bpm = 60  # Resting at night
-            data.append({
-                "timestamp": f"2025-01-01T{hour:02d}:00:00Z",
-                "bpm": bpm
-            })
+            data.append({"timestamp": f"2025-01-01T{hour:02d}:00:00Z", "bpm": bpm})
         result = create_mermaid_heartrate_chart(data)
         # Should have both high and low values
         assert "80" in result

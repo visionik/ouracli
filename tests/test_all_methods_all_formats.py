@@ -16,7 +16,6 @@ import pytest
 
 from ouracli.formatters import format_output
 
-
 # Load fixture data
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 

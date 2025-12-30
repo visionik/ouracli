@@ -1,10 +1,5 @@
 """Tests for charts_html module."""
 
-import json
-from datetime import datetime
-
-import pytest
-
 from ouracli.charts_html import create_chartjs_config, create_chartjs_heartrate_config
 
 

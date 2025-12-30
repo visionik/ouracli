@@ -76,6 +76,43 @@ def format_tree(
                         chart_indent_2 = "  " * (indent + 2)
                         for chart_line in chart.split("\n"):
                             lines.append(f"{chart_indent_2}{chart_line}")
+                # Special handling for heartrate time-series data
+                elif (
+                    key == "heartrate"
+                    and isinstance(value, list)
+                    and value
+                    and isinstance(value[0], dict)
+                    and "bpm" in value[0]
+                ):
+                    from datetime import datetime
+
+                    lines.append(f"{prefix}{human_key}")
+                    # Group by day
+                    by_day: dict[str, list] = {}
+                    for reading in value:
+                        timestamp_str = reading.get("timestamp", "")
+                        if timestamp_str:
+                            try:
+                                dt = datetime.fromisoformat(
+                                    timestamp_str.replace("Z", "+00:00")
+                                )
+                                day_key = dt.strftime("%Y-%m-%d")
+                                if day_key not in by_day:
+                                    by_day[day_key] = []
+                                by_day[day_key].append(reading)
+                            except (ValueError, AttributeError):
+                                continue
+
+                    # Display chart for each day
+                    for day in sorted(by_day.keys()):
+                        day_data = by_day[day]
+                        chart_indent = "  " * (indent + 1)
+                        lines.append(f"{chart_indent}{day}")
+                        lines.append(f"{chart_indent}  Heart Rate Chart:")
+                        chart = create_heartrate_bar_chart_ascii(day_data)
+                        chart_indent_2 = "  " * (indent + 3)
+                        for chart_line in chart.split("\n"):
+                            lines.append(f"{chart_indent_2}{chart_line}")
                 else:
                     lines.append(f"{prefix}{human_key}")
                     lines.append(

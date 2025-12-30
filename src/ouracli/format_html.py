@@ -82,16 +82,44 @@ def format_html(data: Any, title: str | None = None) -> str:
                         and "bpm" in value[0]
                         and "timestamp" in value[0]
                     ):
-                        chart_counter[0] += 1
-                        chart_id = f"chart{chart_counter[0]}"
-                        chart_config = create_chartjs_heartrate_config(value, chart_id)
-                        if chart_config:
-                            chart_configs.append(chart_config)
-                            chart_div = (
-                                f'<div style="height: 400px; margin: 20px 0;">'
-                                f'<canvas id="{chart_id}"></canvas></div>'
+                        from datetime import datetime
+
+                        # Group by day
+                        by_day: dict[str, list] = {}
+                        for reading in value:
+                            timestamp_str = reading.get("timestamp", "")
+                            if timestamp_str:
+                                try:
+                                    dt = datetime.fromisoformat(
+                                        timestamp_str.replace("Z", "+00:00")
+                                    )
+                                    day_key = dt.strftime("%Y-%m-%d")
+                                    if day_key not in by_day:
+                                        by_day[day_key] = []
+                                    by_day[day_key].append(reading)
+                                except (ValueError, AttributeError):
+                                    continue
+
+                        # Create charts grouped by day
+                        charts_html = []
+                        for day in sorted(by_day.keys()):
+                            day_data = by_day[day]
+                            chart_counter[0] += 1
+                            chart_id = f"chart{chart_counter[0]}"
+                            chart_config = create_chartjs_heartrate_config(day_data, chart_id)
+                            if chart_config:
+                                chart_configs.append(chart_config)
+                                charts_html.append(f"<h{level+1}>{day}</h{level+1}>")
+                                chart_div = (
+                                    f'<div style="height: 400px; margin: 20px 0;">'
+                                    f'<canvas id="{chart_id}"></canvas></div>'
+                                )
+                                charts_html.append(chart_div)
+
+                        if charts_html:
+                            complex_items.append(
+                                (f"<h{level}>{human_key}</h{level}>", "\n".join(charts_html))
                             )
-                            complex_items.append((f"<h{level}>{human_key}</h{level}>", chart_div))
                     elif value and isinstance(value[0], dict):
                         items_html = "".join([format_html_item(item, level + 1) for item in value])
                         complex_items.append((f"<h{level}>{human_key}</h{level}>", items_html))
