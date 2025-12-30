@@ -11,7 +11,7 @@ from ouracli.formatters import format_output
 from ouracli.llm_help import show_llm_help
 
 app = typer.Typer(
-    help="CLI tool for accessing Oura Ring data. LLMs/agents: use --ai-help.",
+    help="CLI tool for accessing Oura Ring data.\n💡 LLMs/agents: run 'ouracli --ai-help' for detailed usage guidance.",
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 
@@ -38,7 +38,6 @@ def main_callback(
     # If no command was invoked, show help
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
-        typer.echo("\n💡 LLMs/agents: run 'ouracli --ai-help' for detailed usage guidance.")
         raise typer.Exit()
 
 
