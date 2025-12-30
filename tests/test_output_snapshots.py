@@ -132,6 +132,14 @@ class TestSleepOutputFormats:
         assert "<!DOCTYPE html>" in result
         assert "</html>" in result
 
+    def test_sleep_dataframe_format(self) -> None:
+        """Test dataframe format for sleep data."""
+        result = format_output(SLEEP_14DAYS, "dataframe")
+        
+        assert isinstance(result, str)
+        # Should contain table-like structure
+        # Dataframe format varies, just ensure it doesn't crash
+
 
 class TestHeartrateOutputFormats:
     """Test all output formats for heart rate data."""
@@ -169,6 +177,14 @@ class TestHeartrateOutputFormats:
         # Should contain Chart.js for visualization
         assert "Chart.js" in result or "chart.js" in result
         assert "<canvas" in result
+
+    def test_heartrate_dataframe_format(self) -> None:
+        """Test dataframe format for heart rate data."""
+        result = format_output(HEARTRATE_3DAYS, "dataframe")
+        
+        assert isinstance(result, str)
+        # Should contain table-like structure
+        # Dataframe format varies, just ensure it doesn't crash
 
 
 class TestDetailedOutputValidation:
