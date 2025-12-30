@@ -29,7 +29,6 @@ def main_callback(
     ai_help: bool = typer.Option(
         False,
         "--ai-help",
-        "--llmhelp",  # Keep backward compatibility
         callback=ai_help_callback,
         is_eager=True,
         help="Show comprehensive usage guide for LLMs/agents and exit.",
