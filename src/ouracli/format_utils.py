@@ -143,6 +143,31 @@ def reorganize_by_day(data: dict[str, list[dict[str, Any]]]) -> dict[str, dict[s
                     day["personal_info"] = items[0] if isinstance(items, list) else items
             continue
 
+        # Special handling for heartrate time-series data
+        if method == "heartrate" and items and isinstance(items[0], dict) and "bpm" in items[0]:
+            from datetime import datetime
+
+            # Group heartrate records by day
+            heartrate_by_day: dict[str, list] = {}
+            for reading in items:
+                timestamp_str = reading.get("timestamp", "")
+                if timestamp_str:
+                    try:
+                        dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+                        day_key = dt.strftime("%Y-%m-%d")
+                        if day_key not in heartrate_by_day:
+                            heartrate_by_day[day_key] = []
+                        heartrate_by_day[day_key].append(reading)
+                    except (ValueError, AttributeError):
+                        continue
+
+            # Add grouped heartrate data to each day
+            for day_key, day_readings in heartrate_by_day.items():
+                if day_key not in by_day:
+                    by_day[day_key] = {}
+                by_day[day_key][method] = day_readings
+            continue
+
         for item in items:
             if isinstance(item, dict):
                 # Get the day field - try different possible field names
