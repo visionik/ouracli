@@ -118,6 +118,18 @@ ouracli activity "2025-12-01 7 days" --markdown
 - Using date ranges (e.g., "YYYY-MM-DD 2 days") is more reliable
 - When querying specific dates, consider adding a buffer day
 
+### Readiness Contributors Data
+⚠️ **IMPORTANT**: The `contributors.resting_heart_rate` field in readiness data is a
+**SCORE (0-100)**, NOT an actual BPM measurement. This score indicates how your RHR
+compares to your baseline:
+- Low score (e.g., 19) = RHR is elevated vs. baseline (negative readiness impact)
+- High score (e.g., 95) = RHR is optimal vs. baseline (positive readiness impact)
+- Actual BPM values are found in the heartrate command's time-series data
+- Example: A readiness score of 19 might correspond to an actual RHR of 65 bpm (still normal)
+
+Do NOT interpret these contributor scores as actual heart rate measurements when analyzing
+health metrics.
+
 ### Output Redirection
 - HTML and Markdown outputs are best saved to files:
   ```bash
