@@ -11,13 +11,13 @@ from ouracli.formatters import format_output
 from ouracli.llm_help import show_llm_help
 
 app = typer.Typer(
-    help="CLI tool for accessing Oura Ring data",
+    help="CLI tool for accessing Oura Ring data. LLMs/agents: use --ai-help.",
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 
 
-def llmhelp_callback(value: bool) -> None:
-    """Callback for --llmhelp flag."""
+def ai_help_callback(value: bool) -> None:
+    """Callback for --ai-help flag."""
     if value:
         typer.echo(show_llm_help())
         raise typer.Exit()
@@ -26,10 +26,11 @@ def llmhelp_callback(value: bool) -> None:
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
-    llmhelp: bool = typer.Option(
+    ai_help: bool = typer.Option(
         False,
-        "--llmhelp",
-        callback=llmhelp_callback,
+        "--ai-help",
+        "--llmhelp",  # Keep backward compatibility
+        callback=ai_help_callback,
         is_eager=True,
         help="Show comprehensive usage guide for LLMs/agents and exit.",
     ),
@@ -38,6 +39,7 @@ def main_callback(
     # If no command was invoked, show help
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
+        typer.echo("\n💡 LLMs/agents: run 'ouracli --ai-help' for detailed usage guidance.")
         raise typer.Exit()
 
 
