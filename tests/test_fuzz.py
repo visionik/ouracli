@@ -101,9 +101,9 @@ class TestFormattersFuzzing:
             # Output should not be empty for non-empty input
             if data:
                 assert len(result) > 0
-        except Exception as e:
+        except (ValueError, TypeError, KeyError):
             # Some exceptions are acceptable (e.g., for invalid data)
-            assert isinstance(e, (ValueError, TypeError, KeyError))
+            pass
 
     @given(
         st.lists(
@@ -124,8 +124,8 @@ class TestFormattersFuzzing:
         try:
             result = format_output(data, format_type)
             assert isinstance(result, str)
-        except Exception as e:
-            assert isinstance(e, (ValueError, TypeError))
+        except (ValueError, TypeError):
+            pass
 
 
 class TestChartsHtmlFuzzing:

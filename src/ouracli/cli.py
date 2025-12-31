@@ -11,7 +11,10 @@ from ouracli.formatters import format_output
 from ouracli.llm_help import show_llm_help
 
 app = typer.Typer(
-    help="CLI tool for accessing Oura Ring data.\n💡 LLMs/agents: run 'ouracli --ai-help' for detailed usage guidance.",
+    help=(
+        "CLI tool for accessing Oura Ring data.\n"
+        "💡 LLMs/agents: run 'ouracli --ai-help' for detailed usage guidance."
+    ),
     context_settings={"help_option_names": ["-h", "--help"]},
 )
 

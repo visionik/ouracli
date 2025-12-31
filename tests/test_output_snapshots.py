@@ -329,7 +329,8 @@ class TestFormatSpecificFeatures:
 
         # Should have some data values (dates in format 20XX)
         if ACTIVITY_14DAYS:
-            assert "20" in result and "-" in result  # Should have dates in YYYY-MM-DD format
+            assert "20" in result
+            assert "-" in result  # Should have dates in YYYY-MM-DD format
 
     def test_tree_alignment(self) -> None:
         """Test that tree output has proper alignment."""

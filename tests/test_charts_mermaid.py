@@ -57,7 +57,7 @@ class TestCreateMermaidBarChart:
         # Create 1440 items with known pattern
         items = []
         for hour in range(24):
-            for minute in range(60):
+            for _minute in range(60):
                 items.append(float(hour))  # Each hour has its hour number as value
         result = create_mermaid_bar_chart(items)
         # Should have 24 data points (one per hour)
@@ -77,7 +77,7 @@ class TestCreateMermaidBarChart:
         """Test with varying MET values."""
         items = []
         for hour in range(24):
-            for minute in range(60):
+            for _minute in range(60):
                 if 6 <= hour <= 22:
                     items.append(3.5)
                 else:
@@ -197,10 +197,7 @@ class TestCreateMermaidHeartrateChart:
         """Test with varying BPM values throughout the day."""
         data = []
         for hour in range(24):
-            if 6 <= hour <= 22:
-                bpm = 80  # Active during day
-            else:
-                bpm = 60  # Resting at night
+            bpm = 80 if 6 <= hour <= 22 else 60
             data.append({"timestamp": f"2025-01-01T{hour:02d}:00:00Z", "bpm": bpm})
         result = create_mermaid_heartrate_chart(data)
         # Should have both high and low values

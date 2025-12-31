@@ -44,7 +44,7 @@ def format_html(data: Any, title: str | None = None) -> str:
                         chart_id = f"chart{chart_counter[0]}"
                         chart_configs.append(create_chartjs_config(value["items"], chart_id))
                         interval = value.get("interval", "N/A")
-                        interval_p = f'<p><strong>Interval:</strong> {interval} seconds</p>'
+                        interval_p = f"<p><strong>Interval:</strong> {interval} seconds</p>"
                         chart_div = (
                             f'<div style="height: 400px; margin: 20px 0;">'
                             f'<canvas id="{chart_id}"></canvas></div>'
@@ -148,9 +148,7 @@ def format_html(data: Any, title: str | None = None) -> str:
     html_parts.append('<html lang="en">')
     html_parts.append("<head>")
     html_parts.append('<meta charset="UTF-8">')
-    html_parts.append(
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0">'
-    )
+    html_parts.append('<meta name="viewport" content="width=device-width, initial-scale=1.0">')
     html_parts.append(f'<title>{title or "Oura Data"}</title>')
     html_parts.append(
         '<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>'

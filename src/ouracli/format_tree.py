@@ -88,24 +88,22 @@ def format_tree(
 
                     lines.append(f"{prefix}{human_key}")
                     # Group by day
-                    by_day: dict[str, list] = {}
+                    by_day_hr: dict[str, list] = {}
                     for reading in value:
                         timestamp_str = reading.get("timestamp", "")
                         if timestamp_str:
                             try:
-                                dt = datetime.fromisoformat(
-                                    timestamp_str.replace("Z", "+00:00")
-                                )
+                                dt = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
                                 day_key = dt.strftime("%Y-%m-%d")
-                                if day_key not in by_day:
-                                    by_day[day_key] = []
-                                by_day[day_key].append(reading)
+                                if day_key not in by_day_hr:
+                                    by_day_hr[day_key] = []
+                                by_day_hr[day_key].append(reading)
                             except (ValueError, AttributeError):
                                 continue
 
                     # Display chart for each day
-                    for day in sorted(by_day.keys()):
-                        day_data = by_day[day]
+                    for day in sorted(by_day_hr.keys()):
+                        day_data = by_day_hr[day]
                         chart_indent = "  " * (indent + 1)
                         lines.append(f"{chart_indent}{day}")
                         lines.append(f"{chart_indent}  Heart Rate Chart:")

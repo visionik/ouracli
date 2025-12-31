@@ -1,7 +1,8 @@
 """Comprehensive snapshot tests for all CLI methods × all output formats.
 
 This test file ensures complete coverage of:
-- 12 CLI methods (activity, sleep, readiness, spo2, stress, heartrate, workout, session, tag, rest-mode, personal-info, all)
+- 12 CLI methods (activity, sleep, readiness, spo2, stress, heartrate, workout,
+  session, tag, rest-mode, personal-info, all)
 - 5 output formats (json, tree, markdown, html, dataframe)
 = 60 test combinations total
 

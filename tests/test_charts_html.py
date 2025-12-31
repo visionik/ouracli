@@ -235,7 +235,7 @@ class TestCreateChartjsConfig:
         items = []
         # Simulate a day: low at night, high during day
         for hour in range(24):
-            for minute in range(60):
+            for _minute in range(60):
                 if 6 <= hour <= 22:
                     items.append(3.0)  # Active during day
                 else:
