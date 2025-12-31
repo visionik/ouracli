@@ -1,6 +1,7 @@
 """Oura API client wrapper."""
 
 import os
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -58,13 +59,16 @@ class OuraClient:
                 return token
 
         # None of the methods worked
-        raise ValueError(
-            "PERSONAL_ACCESS_TOKEN not found. Please set it via:\n"
+        print(
+            "Error: PERSONAL_ACCESS_TOKEN not found.\n\n"
+            "Please set it via:\n"
             "  1. Environment variable: export PERSONAL_ACCESS_TOKEN=<your_token>\n"
             "  2. Local file: ./secrets/oura.env\n"
-            "  3. Home file: ~/.secrets/oura.env\n"
-            "\nObtain a token at: https://cloud.ouraring.com/personal-access-tokens"
+            "  3. Home file: ~/.secrets/oura.env\n\n"
+            "Obtain a token at: https://cloud.ouraring.com/personal-access-tokens",
+            file=sys.stderr,
         )
+        sys.exit(1)
 
     def _get(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
         """
