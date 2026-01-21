@@ -1,7 +1,7 @@
 """CLI application for OuraCLI."""
 
 from enum import Enum
-from typing import Any
+from typing import Any, Literal
 
 import typer
 
@@ -19,25 +19,29 @@ app = typer.Typer(
 )
 
 
-def ai_help_callback(value: bool) -> None:
-    """Callback for --ai-help flag."""
-    if value:
-        typer.echo(show_llm_help())
-        raise typer.Exit()
-
-
 @app.callback(invoke_without_command=True)
 def main_callback(
     ctx: typer.Context,
     ai_help: bool = typer.Option(
         False,
         "--ai-help",
-        callback=ai_help_callback,
         is_eager=True,
         help="Show comprehensive usage guide for LLMs/agents and exit.",
     ),
+    ai_help_format: Literal["markdown", "json"] = typer.Option(
+        "markdown",
+        "--ai-help-format",
+        help="Format for --ai-help output (markdown or json)",
+        show_choices=True,
+        case_sensitive=False,
+    ),
 ) -> None:
     """CLI tool for accessing Oura Ring data."""
+    # If --ai-help requested, emit dashdash-spec help and exit early
+    if ai_help:
+        typer.echo(show_llm_help(format_type=ai_help_format))
+        raise typer.Exit()
+
     # If no command was invoked, show help
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())

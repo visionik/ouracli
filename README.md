@@ -26,17 +26,31 @@ cp secrets/oura.env.example secrets/oura.env
 
 ```bash
 # Get daily activity data
-ouracli activity --days 7
+ouracli activity "7 days" --json
 
 # Get sleep data for yesterday
 ouracli sleep yesterday
 
 # Get all data for today
-ouracli all today --format json
+ouracli all today --json
 
-# Available output formats: tree (default), json, dataframe, markdown
-ouracli sleep today --format markdown
+# Available output formats: tree (default), json, dataframe, markdown, html
+ouracli sleep today --markdown
 ```
+
+### AI/LLM Agent Help
+
+For AI agents and LLMs, use the `--ai-help` flag to get comprehensive usage instructions in structured formats:
+
+```bash
+# Get usage guide in markdown format (default)
+ouracli --ai-help
+
+# Get usage guide in JSON format for programmatic parsing
+ouracli --ai-help --ai-help-format json
+```
+
+This follows the [dashdash-spec v0.2.0](https://github.com/visionik/dashdash) convention for providing machine-readable CLI documentation.
 
 ### Available Commands
 

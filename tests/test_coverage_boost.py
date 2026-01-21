@@ -1,8 +1,6 @@
 """Tests to boost coverage to 90% by covering previously untested code paths."""
 
-import json
 import os
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
