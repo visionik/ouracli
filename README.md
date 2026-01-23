@@ -2,6 +2,10 @@
 
 CLI tool for accessing Oura Ring data.
 
+![Activity Chart](chart.png)
+
+*Appreciate the fine elegance of the terminal braille charts*
+
 ## Installation
 
 ```bash
